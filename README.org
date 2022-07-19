@@ -1,0 +1,300 @@
+#+TITLE: Qtile Config
+#+PROPERTY: header-args :tangle config.py
+
+* TABLE OF CONTENTS :toc:
+- [[#about][ABOUT]]
+  - [[#thanks][THANKS!]]
+- [[#imports][IMPORTS]]
+  - [[#defaults][DEFAULTS]]
+- [[#variables][VARIABLES]]
+  - [[#keys][KEYS]]
+  - [[#programs][PROGRAMS]]
+  - [[#default-variables][DEFAULT VARIABLES]]
+- [[#keys-1][KEYS]]
+  - [[#open][OPEN/]]
+  - [[#layout][LAYOUT]]
+  - [[#layouts][LAYOUTS]]
+  - [[#spawn][SPAWN]]
+  - [[#qtile][QTILE]]
+  - [[#close][/CLOSE]]
+- [[#groups][GROUPS]]
+  - [[#attributes][ATTRIBUTES]]
+  - [[#keys-2][KEYS]]
+- [[#layouts-1][LAYOUTS]]
+- [[#widgets][WIDGETS]]
+  - [[#defaults-1][DEFAULTS]]
+  - [[#extensions][EXTENSIONS]]
+- [[#screens][SCREENS]]
+  - [[#open-1][OPEN/]]
+  - [[#screen-1][SCREEN-1]]
+  - [[#screensclose][SCREENS/CLOSE/]]
+- [[#mouse][MOUSE]]
+  - [[#bindings][BINDINGS]]
+  - [[#variables-1][VARIABLES]]
+- [[#floating][FLOATING]]
+
+* ABOUT
+Qtile Config, written in org mode.
+
+Marking my first functional org document, I consider it;
+    - A work, forever in progress!
+    - A path to slithering!
+    - A zamn nice config?
+Well... I'll let you decide for yourself.
+** THANKS!
+Thanks to DistroTube my vim addiction has been cured!
+    It's a story as old as time... XD
+* IMPORTS
+Imports are how we 'order' useful functions, (and/or other goodies like variables!).
+
+First we name the seller;
+    from #EXAMPLE#
+Then from the cataloge we start shopping;
+    from #EXAMPLE# import #DEVILSLETTUCE#
+
+Forget next day shipping, imports happen near instantly!
+No one wants to wait for that ZAZA.
+** DEFAULTS
+#+begin_src python
+from libqtile import bar, layout, widget
+from libqtile.config import Click, Drag, Group, Key, Match, Screen
+from libqtile.lazy import lazy
+from libqtile.utils import guess_terminal
+#+end_src
+* VARIABLES
+Variables are like definitions.
+
+Take for example a sentence;
+    'Apples are good, I really like apples!'
+    # OR #
+    apple = 'Apples are good, I really like apples!'
+
+Initially it might seem like more work...
+    But now instead of having to ramble about apples.
+All that has to be said is, apple !
+This is because you have already told Python what an apple means to you!
+** KEYS
+Define Keys
+#+begin_src python
+mod = "mod1"
+#+end_src
+** PROGRAMS
+Defining Programs
+#+begin_src python
+terminal = guess_terminal()
+#+end_src
+** DEFAULT VARIABLES
+These variables are used 'directly' by Qtile.
+For the most part the variable name should be descriptive enough...
+However all are well documentated on the offical Qtile Docs.
+#+begin_src python
+auto_fullscreen = True
+focus_on_window_activation = "smart"
+reconfigure_screens = True
+auto_minimize = True
+wl_input_rules = None
+wmname = "LG3D"
+#+end_src
+* KEYS
+** OPEN/
+#+begin_src python
+keys = [
+#+end_src
+** LAYOUT
+*** NAVIGATION
+Keys that allow you to move around!
+#+begin_src python
+    Key([mod], "h", lazy.layout.left(), desc="Move focus to left"),
+    Key([mod], "l", lazy.layout.right(), desc="Move focus to right"),
+    Key([mod], "j", lazy.layout.down(), desc="Move focus down"),
+    Key([mod], "k", lazy.layout.up(), desc="Move focus up"),
+    Key([mod], "m", lazy.layout.next(), desc="Move window focus to other window"),
+#+end_src
+*** MOVEMENT
+Keys that allow you to move windows around!
+    In Colums layout, moving out of range will create a new column
+    lazy.layout.toggle_split() stacks or unstacks windows in a toggle fashion.
+#+begin_src python
+    Key([mod, "shift"], "h", lazy.layout.shuffle_left(), desc="Move window to the left"),
+    Key([mod, "shift"], "l", lazy.layout.shuffle_right(), desc="Move window to the right"),
+    Key([mod, "shift"], "j", lazy.layout.shuffle_down(), desc="Move window down"),
+    Key([mod, "shift"], "k", lazy.layout.shuffle_up(), desc="Move window up"),
+    Key([mod, "shift"], "Return", lazy.layout.toggle_split(), desc="Toggle stack states"),
+#+end_src
+*** RESIZING
+Keys that allow you to resize the window/s.
+#+begin_src python
+    Key([mod, "control"], "h", lazy.layout.grow_left(), desc="Grow window to the left"),
+    Key([mod, "control"], "l", lazy.layout.grow_right(), desc="Grow window to the right"),
+    Key([mod, "control"], "j", lazy.layout.grow_down(), desc="Grow window down"),
+    Key([mod, "control"], "k", lazy.layout.grow_up(), desc="Grow window up"),
+    Key([mod], "n", lazy.layout.normalize(), desc="Reset all window sizes"),
+#+end_src
+** LAYOUTS
+#+begin_src python
+    Key([mod], "Tab", lazy.next_layout(), desc="Toggle between layouts"),
+#+end_src
+** SPAWN
+#+begin_src python
+    Key([mod], "r", lazy.spawncmd(), desc="Spawn a command using a prompt widget"),
+    Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
+    Key([mod], "e", lazy.spawn('emacs'), desc="Launch Doom Emacs!"),
+#+end_src
+*** K1LL
+#+begin_src python
+    Key([mod], "w", lazy.window.kill(), desc="Kill focused window"),
+#+end_src
+** QTILE
+#+begin_src python
+    Key([mod, "control"], "r", lazy.reload_config(), desc="Reload the config"),
+    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown Qtile"),
+#+end_src
+
+** /CLOSE
+Closing bracket for the keys list!
+Having this just sit under whatever last header was just didn't feel right.
+    It's alot cozier like this :)
+#+begin_src python
+]
+#+end_src
+* GROUPS
+** ATTRIBUTES
+#+begin_src python
+groups = [Group(i) for i in "123456789"]
+#+end_src
+** KEYS
+#+begin_src python
+for i in groups:
+    keys.extend(
+        [
+            Key(
+                [mod],
+                i.name,
+                lazy.group[i.name].toscreen(),
+                desc="Switch to group {}".format(i.name),
+            ),
+            Key(
+                [mod, "shift"],
+                i.name,
+                lazy.window.togroup(i.name, switch_group=True),
+                desc="Switch to & move focused window to group {}".format(i.name),
+            ),
+            # Or, use below if you prefer not to switch to that group.
+            # # mod1 + shift + letter of group = move focused window to group
+            # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
+            #     desc="move focused window to group {}".format(i.name)),
+        ]
+    )
+#+end_src
+* LAYOUTS
+#+begin_src python
+layouts = [
+    #layout.Columns(border_focus_stack=["#d75f5f", "#8f3d3d"], border_width=4),
+    layout.Stack(num_stacks=2, border_width=0, margin=10),
+    layout.Stack(num_stacks=1, border_width=0, margin=10),
+    #layout.Max(),
+    # layout.Bsp(),
+    # layout.Matrix(),
+    # layout.MonadTall(),
+    # layout.MonadWide(),
+    # layout.RatioTile(),
+    # layout.Tile(),
+    # layout.TreeTab(),
+    # layout.VerticalTile(),
+    # layout.Zoomy(),
+]
+#+end_src
+* WIDGETS
+** DEFAULTS
+#+begin_src python
+widget_defaults = dict(
+    font="sans",
+    fontsize=12,
+    padding=3,
+)
+#+end_src
+** EXTENSIONS
+#+begin_src python
+extension_defaults = widget_defaults.copy()
+#+end_src
+* SCREENS
+** OPEN/
+#+begin_src python
+screens = [
+#+end_src
+** SCREEN-1
+*** OPEN/
+#+begin_src python
+    Screen(
+#+end_src
+*** BAR-1
+**** OPEN/
+#+begin_src python
+        top=bar.Bar(
+#+end_src
+**** WIDGETS
+#+begin_src python
+            [
+                widget.CurrentLayout(),
+                widget.GroupBox(),
+                widget.Prompt(),
+                widget.WindowName(),
+                widget.Chord(
+                    chords_colors={
+                        "launch": ("#ff0000", "#ffffff"),
+                    },
+                    name_transform=lambda name: name.upper(),
+                ),
+                widget.Systray(),
+                widget.Clock(format="%Y-%m-%d %a %I:%M %p"),
+                widget.QuickExit(),
+            ],
+#+end_src
+**** PROPERTIES
+#+begin_src python
+            24,
+            #margin=10,
+#+end_src
+**** BAR-1/CLOSE/
+#+begin_src python
+        ),
+#+end_src
+*** SCREEN-1/CLOSE/
+#+begin_src python
+    ),
+#+end_src
+** SCREENS/CLOSE/
+#+begin_src python
+]
+#+end_src
+* MOUSE
+** BINDINGS
+#+begin_src python
+mouse = [
+    Drag([mod], "Button1", lazy.window.set_position_floating(), start=lazy.window.get_position()),
+    Drag([mod], "Button3", lazy.window.set_size_floating(), start=lazy.window.get_size()),
+    Click([mod], "Button2", lazy.window.bring_to_front()),
+]
+#+end_src
+** VARIABLES
+#+begin_src python
+dgroups_key_binder = None
+dgroups_app_rules = []  # type: list
+follow_mouse_focus = True
+bring_front_click = False
+cursor_warp = False
+#+end_src
+* FLOATING
+#+begin_src python
+floating_layout = layout.Floating(
+    float_rules=[
+        *layout.Floating.default_float_rules,
+        Match(wm_class="confirmreset"),  # gitk
+        Match(wm_class="makebranch"),  # gitk
+        Match(wm_class="maketag"),  # gitk
+        Match(wm_class="ssh-askpass"),  # ssh-askpass
+        Match(title="branchdialog"),  # gitk
+        Match(title="pinentry"),  # GPG key password entry
+    ]
+)
+#+end_src
